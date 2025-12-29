@@ -1,17 +1,17 @@
 /**
-Copyright (c) 2018-present, Walmart, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ * Copyright (c) 2018-present, Walmart, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.walmartlabs.x12.standard;
@@ -38,17 +38,17 @@ import java.util.Objects;
 
 /**
  * X12 Parser
- *
+ * <p>
  * Envelope
  * -- ISA
  * ----- Groups
  * -- ISE
- *
+ * <p>
  * Group
  * -- GS
  * ----- Transactions
  * -- GE
- *
+ * <p>
  * Transaction
  * -- ST
  * ----- Transaction Details
@@ -66,6 +66,16 @@ public final class StandardX12Parser implements X12Parser<StandardX12Document> {
 
     private TransactionSetParser transactionParser;
     private UnhandledTransactionSet unhandledTransactionSet;
+
+    private final boolean tildeEOL;
+
+    public StandardX12Parser() {
+        this(false);
+    }
+
+    public StandardX12Parser(boolean tildeEOL) {
+        this.tildeEOL = tildeEOL;
+    }
 
     /**
      * parse an X12 document into the representative Java POJO
@@ -85,12 +95,12 @@ public final class StandardX12Parser implements X12Parser<StandardX12Document> {
                 // remove any excess white space
                 // and
                 // break document up into segment lines
-                List<X12Segment> segmentList = SourceToSegmentUtil.splitSourceDataIntoSegments(sourceData.trim());
+                List<X12Segment> segmentList = SourceToSegmentUtil.splitSourceDataIntoSegments(sourceData.trim(), tildeEOL);
                 if (X12ParsingUtil.isValidEnvelope(segmentList, ENVELOPE_HEADER_ID, ENVELOPE_TRAILER_ID)) {
                     // standard parsing of segment lines
                     SegmentIterator segments = new SegmentIterator(segmentList);
                     this.standardParsingTemplate(segments, x12Doc);
-                } else  {
+                } else {
                     throw new X12ParserException("Invalid EDI X12 message: must be wrapped in ISA/ISE");
                 }
             }
@@ -110,9 +120,9 @@ public final class StandardX12Parser implements X12Parser<StandardX12Document> {
     /**
      * convenience method that will allow a Collection of {@link TransactionSetParser}
      * to be registered w/ the parser
-     *
+     * <p>
      * Any null value in the Collection will be ignored.
-     *
+     * <p>
      * Note: if there are one or more {@link TransactionSetParser} already registered
      * with the parser, this method will append the parsers in the Collection
      * to the existing chain of parsers.
@@ -125,9 +135,9 @@ public final class StandardX12Parser implements X12Parser<StandardX12Document> {
 
         if (transactionParsers != null && !transactionParsers.isEmpty()) {
             isAdded = transactionParsers.stream()
-                .filter(Objects::nonNull)
-                .map(this::registerTransactionSetParser)
-                .reduce(true, (currAdded, wasAdded) -> currAdded && wasAdded);
+                    .filter(Objects::nonNull)
+                    .map(this::registerTransactionSetParser)
+                    .reduce(true, (currAdded, wasAdded) -> currAdded && wasAdded);
         }
 
         return isAdded;
@@ -154,7 +164,7 @@ public final class StandardX12Parser implements X12Parser<StandardX12Document> {
                 // we have a transaction set parser
                 // so try to add this to the end of the existing chain
                 return ((AbstractTransactionSetParserChainable) this.transactionParser)
-                    .registerNextTransactionSetParser(txParser);
+                        .registerNextTransactionSetParser(txParser);
             }
         }
 
@@ -359,6 +369,7 @@ public final class StandardX12Parser implements X12Parser<StandardX12Document> {
 
     /**
      * parse the GE segment
+     *
      * @param segment
      * @param x12Doc
      */
@@ -376,6 +387,7 @@ public final class StandardX12Parser implements X12Parser<StandardX12Document> {
 
     /**
      * register the correct {@link TransactionSetParser} to parse the transaction set(s) and add the resulting objects to the X12 Group
+     *
      * @param transactionSegments
      * @param x12Group
      */

@@ -1,17 +1,17 @@
 /**
-Copyright (c) 2018-present, Walmart, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+ * Copyright (c) 2018-present, Walmart, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.walmartlabs.x12.util;
@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 
 /**
  * This utility is used to help parse an EDI transmission
- *
- *  It used to be part of the {@link X12Parser} but was
- *  pulled into a utility to make it more reusable
+ * <p>
+ * It used to be part of the {@link X12Parser} but was
+ * pulled into a utility to make it more reusable
  */
 public final class SourceToSegmentUtil {
 
@@ -55,11 +55,30 @@ public final class SourceToSegmentUtil {
      * @return a {@link List} of {@link X12Segment} or empty if there are issues w/ source data
      */
     public static List<X12Segment> splitSourceDataIntoSegments(String sourceData) {
+        return splitSourceDataIntoSegments(sourceData, false);
+    }
+
+    /**
+     * parses the source data into a list of segments
+     * 1) assume each segment is on separate line
+     * 2) otherwise try 106th character in source data
+     *
+     * @param sourceData
+     * @return a {@link List} of {@link X12Segment} or empty if there are issues w/ source data
+     */
+    public static List<X12Segment> splitSourceDataIntoSegments(String sourceData, boolean tildleEOL) {
         // assume that the source data has
         // each segment on a separate line
         // and that ALL valid EDI / X12 documents
         // are > 1 segment
-        List<X12Segment> segments = splitSourceDataIntoSegments(sourceData, "\\r?\\n");
+        String reg;
+        if (tildleEOL) {
+            reg = "~\\r?\\n";
+        } else {
+            reg = "\\r?\\n";
+        }
+        //        System.out.printf("INSTANTIATING WITH REG: %s\n", reg);
+        List<X12Segment> segments = splitSourceDataIntoSegments(sourceData, reg);
         if (segments != null && segments.size() > 1) {
             return segments;
         } else {
@@ -73,6 +92,7 @@ public final class SourceToSegmentUtil {
     /**
      * parses the source data into a list of segments
      * using the the segment delimiter that was passed in
+     *
      * @param sourceData
      * @param segmentSeparatorRegEx a regex to split segments
      * @return a {@link List} of {@link X12Segment} or empty is either parameter is missing
@@ -85,13 +105,14 @@ public final class SourceToSegmentUtil {
             Character segmentDataElementDelimiter = findElementDelimiterCharacter(sourceData);
             String[] segments = sourceData.split(segmentSeparatorRegEx);
             return Arrays.stream(segments)
-                .map(segment -> new X12Segment(segment, segmentDataElementDelimiter))
-                .collect(Collectors.toList());
+                    .map(segment -> new X12Segment(segment, segmentDataElementDelimiter))
+                    .collect(Collectors.toList());
         }
     }
 
     /**
      * get the segment delimiter/separator character
+     *
      * @param sourceData
      * @return the character at the 106th position or null if there are not enough characters
      */
@@ -105,6 +126,7 @@ public final class SourceToSegmentUtil {
 
     /**
      * get the element delimiter/separator character
+     *
      * @param sourceData
      * @return the character at the 4th position or null if there are not enough characters
      */

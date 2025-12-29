@@ -13,7 +13,7 @@
   <groupId>com.walmartlabs.x12</groupId>
   <artifactId>gozer</artifactId>
   <name>gozer</name>
-  <version>0.3.4-WALS</version>
+  <version>0.3.5-WALS</version>
   <packaging>takari-jar</packaging>
 
   <distributionManagement>
